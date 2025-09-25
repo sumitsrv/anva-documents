@@ -7,4 +7,6 @@ public interface WordFrequency {
     String getWord();
 
     int getFrequency();
+
+    WordFrequency setFrequency(int frequency);
 }
