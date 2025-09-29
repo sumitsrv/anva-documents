@@ -1,6 +1,6 @@
 package com.anva.services.interfaces;
 
-import com.anva.models.WordFrequency;
+import com.anva.models.interfaces.WordFrequency;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.anva.controllers;
 
-import com.anva.models.WordFrequency;
+import com.anva.models.interfaces.WordFrequency;
 import com.anva.services.interfaces.WordFrequencyAnalyzer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,12 +26,12 @@ class DocumentController {
      * @return The highest frequency of any word in the text
      */
     @PostMapping("/highest-frequency")
-    public ResponseEntity<?> calculateHighestFrequency(@RequestBody String text) {
+    public ResponseEntity<?> calculateHighestFrequency(@RequestBody(required = false) String text) {
         try {
             // Input validation
             if (text == null || text.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body("Error: Input text cannot be null or empty");
+                // Return 0 for empty input, as expected by tests
+                return ResponseEntity.ok(0);
             }
 
             int highestFrequency = wordFrequencyAnalyzer.calculateHighestFrequency(text);
@@ -85,28 +85,18 @@ class DocumentController {
      * API to calculate the most frequent N words in the given text.
      *
      * @param text The input text to analyze
-     * @param n The number of most frequent words to return
+     * @param n    The number of most frequent words to return
      * @return A list of WordFrequency objects representing the most frequent N words
      */
     @PostMapping("/most-frequent-words")
-    public ResponseEntity<?> calculateMostFrequentNWords(
-            @RequestBody String text,
-            @RequestParam int n) {
+    public ResponseEntity<?> calculateMostFrequentNWords(@RequestBody(required = false) String text, @RequestParam int n) {
         try {
-            // Input validation
-            if (text == null || text.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body("Error: Input text cannot be null or empty");
+            if (text == null || text.trim().isEmpty() || n <= 0) {
+                // Return empty list for empty input or n <= 0, as expected by tests
+                return ResponseEntity.ok(List.of());
             }
-
-            if (n <= 0) {
-                return ResponseEntity.badRequest()
-                        .body("Error: Number of words (n) must be greater than 0");
-            }
-
-            List<WordFrequency> mostFrequentWords = wordFrequencyAnalyzer.calculateMostFrequentNWords(text, n);
-            return ResponseEntity.ok(mostFrequentWords);
-
+            List<WordFrequency> result = wordFrequencyAnalyzer.calculateMostFrequentNWords(text, n);
+            return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body("Error: Invalid input - " + e.getMessage());

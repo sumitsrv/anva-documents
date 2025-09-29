@@ -1,4 +1,4 @@
-package com.anva.models;
+package com.anva.models.interfaces;
 
 /**
  * Interface representing a word and its frequency.

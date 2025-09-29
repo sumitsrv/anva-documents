@@ -1,13 +1,14 @@
 package com.anva.controllers;
 
-import com.anva.models.WordFrequency;
+import com.anva.models.WordFrequencyImpl;
+import com.anva.models.interfaces.WordFrequency;
 import com.anva.services.interfaces.WordFrequencyAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -23,7 +24,7 @@ class DocumentControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private WordFrequencyAnalyzer wordFrequencyAnalyzer;
 
     @Autowired
@@ -115,9 +116,9 @@ class DocumentControllerTest {
         String inputText = "The quick brown fox jumps over the lazy dog. The fox is quick.";
         int n = 3;
         List<WordFrequency> expectedWords = Arrays.asList(
-                new TestWordFrequency("the", 2),
-                new TestWordFrequency("quick", 2),
-                new TestWordFrequency("fox", 2)
+                new WordFrequencyImpl("the", 2),
+                new WordFrequencyImpl("quick", 2),
+                new WordFrequencyImpl("fox", 2)
         );
         when(wordFrequencyAnalyzer.calculateMostFrequentNWords(inputText, n)).thenReturn(expectedWords);
 

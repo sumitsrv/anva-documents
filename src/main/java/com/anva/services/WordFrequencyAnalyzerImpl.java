@@ -1,7 +1,7 @@
 package com.anva.services;
 
-import com.anva.models.WordFrequency;
 import com.anva.models.WordFrequencyImpl;
+import com.anva.models.interfaces.WordFrequency;
 import com.anva.services.interfaces.WordFrequencyAnalyzer;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +25,9 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
      */
     @Override
     public int calculateHighestFrequency(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
         AtomicReference<String> wordWithHighestFrequency = new AtomicReference<>("");
         AtomicInteger highestFrequency = new AtomicInteger(0);
         ConcurrentHashMap<String, WordFrequency> wordFrequencyMap = new ConcurrentHashMap<>();
@@ -43,6 +46,9 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
             });
         });
 
+        if (wordWithHighestFrequency.get().isEmpty()) {
+            return 0;
+        }
         return wordFrequencyMap.get(wordWithHighestFrequency.get()).getFrequency();
     }
 
@@ -62,9 +68,7 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
      */
     @Override
     public List<WordFrequency> calculateMostFrequentNWords(String text, int n) {
-        LinkedList<WordFrequency> mostFrequentWords = new LinkedList<>();
         ConcurrentHashMap<String, WordFrequency> wordFrequencyMap = new ConcurrentHashMap<>();
-
         ALL_WORDS_REGEX_PATTERN_MATCHER.matcher(text).results().parallel().forEach(it -> {
             wordFrequencyMap.compute(it.group().toLowerCase(), (k, v) -> {
                 if (v == null) {
@@ -74,6 +78,12 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
                 }
             });
         });
-        return mostFrequentWords;
+        return wordFrequencyMap.values().stream()
+                .sorted((a, b) -> {
+                    int freqCompare = Integer.compare(b.getFrequency(), a.getFrequency());
+                    return freqCompare != 0 ? freqCompare : a.getWord().compareTo(b.getWord());
+                })
+                .limit(n)
+                .toList();
     }
 }

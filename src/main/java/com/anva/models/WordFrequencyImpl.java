@@ -1,5 +1,7 @@
 package com.anva.models;
 
+import com.anva.models.interfaces.WordFrequency;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,7 +26,7 @@ public class WordFrequencyImpl implements WordFrequency {
 
     @Override
     public int getFrequency() {
-        return 0;
+        return this.frequency.get();
     }
 
     public WordFrequency setFrequency(int frequency) {
