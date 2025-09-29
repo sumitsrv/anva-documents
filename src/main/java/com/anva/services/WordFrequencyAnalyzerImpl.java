@@ -28,28 +28,34 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
         if (text == null || text.trim().isEmpty()) {
             return 0;
         }
-        AtomicReference<String> wordWithHighestFrequency = new AtomicReference<>("");
-        AtomicInteger highestFrequency = new AtomicInteger(0);
+        AtomicReference<WordFrequency> wordWithHighestFrequency = new AtomicReference<>(null);
         ConcurrentHashMap<String, WordFrequency> wordFrequencyMap = new ConcurrentHashMap<>();
 
-        ALL_WORDS_REGEX_PATTERN_MATCHER.matcher(text).results().parallel().forEach(it -> {
-            wordFrequencyMap.compute(it.group().toLowerCase(), (k, v) -> {
-                if (v == null) {
-                    return new WordFrequencyImpl(k, 1);
+        ALL_WORDS_REGEX_PATTERN_MATCHER.matcher(text).results().parallel().forEach(token -> {
+            wordFrequencyMap.compute(token.group().toLowerCase(), (key, value) -> {
+                WordFrequency newFreq;
+                if (value == null) {
+                    newFreq = new WordFrequencyImpl(key, 1);
                 } else {
-                    if (v.getFrequency() >= highestFrequency.get()) {
-                        highestFrequency.set(v.getFrequency());
-                        wordWithHighestFrequency.set(v.getWord());
-                    }
-                    return v.setFrequency(v.getFrequency() + 1);
+                    newFreq = value.setFrequency(value.getFrequency() + 1);
                 }
+
+                wordWithHighestFrequency.updateAndGet(current -> {
+                    if (current == null || newFreq.getFrequency() > current.getFrequency()) {
+                        return newFreq;
+                    }
+                    return current;
+                });
+
+                return newFreq;
             });
         });
 
-        if (wordWithHighestFrequency.get().isEmpty()) {
+
+        if (wordWithHighestFrequency.get() == null) {
             return 0;
         }
-        return wordFrequencyMap.get(wordWithHighestFrequency.get()).getFrequency();
+        return wordWithHighestFrequency.get().getFrequency();
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("documents")
-class DocumentController {
+public class DocumentController {
 
     @Autowired
     private WordFrequencyAnalyzer wordFrequencyAnalyzer;

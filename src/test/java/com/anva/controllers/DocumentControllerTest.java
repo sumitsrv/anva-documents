@@ -1,13 +1,15 @@
 package com.anva.controllers;
 
-import com.anva.models.WordFrequencyImpl;
+import com.anva.application.ApplicationBoot;
+import com.anva.controllers.DocumentController;
 import com.anva.models.interfaces.WordFrequency;
+import com.anva.models.WordFrequencyImpl;
 import com.anva.services.interfaces.WordFrequencyAnalyzer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DocumentController.class)
+@ContextConfiguration(classes = ApplicationBoot.class)
 class DocumentControllerTest {
 
     @Autowired
@@ -26,9 +29,6 @@ class DocumentControllerTest {
 
     @MockitoBean
     private WordFrequencyAnalyzer wordFrequencyAnalyzer;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private static final String BASE_URL = "/documents";
 
@@ -143,7 +143,7 @@ class DocumentControllerTest {
         // Given
         String inputText = "";
         int n = 5;
-        List<WordFrequency> expectedWords = Arrays.asList();
+        List<WordFrequency> expectedWords = List.of();
         when(wordFrequencyAnalyzer.calculateMostFrequentNWords(inputText, n)).thenReturn(expectedWords);
 
         // When & Then
@@ -173,7 +173,7 @@ class DocumentControllerTest {
         // Given
         String inputText = "The quick brown fox";
         int n = 0;
-        List<WordFrequency> expectedWords = Arrays.asList();
+        List<WordFrequency> expectedWords = List.of();
         when(wordFrequencyAnalyzer.calculateMostFrequentNWords(inputText, n)).thenReturn(expectedWords);
 
         // When & Then
@@ -199,6 +199,4 @@ class DocumentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("1"));
     }
-
-
 }
