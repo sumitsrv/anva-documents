@@ -1,4 +1,4 @@
-package com.anva.application;
+package com.anva;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Main application class to bootstrap the Spring Boot application.
  */
-@SpringBootApplication(scanBasePackages = "com.anva")
+@SpringBootApplication
 public class ApplicationBoot {
     public static void main(String[] args) {
         SpringApplication.run(ApplicationBoot.class, args);

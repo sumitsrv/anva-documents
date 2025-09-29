@@ -1,6 +1,6 @@
 package com.anva.controllers;
 
-import com.anva.application.ApplicationBoot;
+import com.anva.ApplicationBoot;
 import com.anva.controllers.DocumentController;
 import com.anva.models.interfaces.WordFrequency;
 import com.anva.models.WordFrequencyImpl;

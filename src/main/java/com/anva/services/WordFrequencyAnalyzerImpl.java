@@ -28,6 +28,12 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
         if (text == null || text.trim().isEmpty()) {
             return 0;
         }
+
+        // Parse tokens (words) using regular expression, and count in parallel for potential speedup on large inputs.
+        // However, the overhead of synchronization may outweigh the benefits on smaller inputs.
+        // In a heavily loaded system, keeping this to sequential processing might be better for overall thoroughput
+        // because the CPU might not be available to do parallel processing, and also the context switching is additional overhead.
+
         AtomicReference<WordFrequency> wordWithHighestFrequency = new AtomicReference<>(null);
         ConcurrentHashMap<String, WordFrequency> wordFrequencyMap = new ConcurrentHashMap<>();
 
@@ -74,16 +80,24 @@ class WordFrequencyAnalyzerImpl implements WordFrequencyAnalyzer {
      */
     @Override
     public List<WordFrequency> calculateMostFrequentNWords(String text, int n) {
+        // Map: normalized word -> mutable frequency holder (WordFrequencyImpl is used as value object here)
         ConcurrentHashMap<String, WordFrequency> wordFrequencyMap = new ConcurrentHashMap<>();
+
+        // Parse token (words) using regular expression, and count in parallel for potential speedup on large inputs.
+        // However, the overhead of synchronization may outweigh the benefits on smaller inputs.
+        // In a heavily loaded system, keeping this to sequential processing might be better for overall thoroughput
+        // because the CPU might not be available to do parallel processing, and also the context switching is additional overhead.
         ALL_WORDS_REGEX_PATTERN_MATCHER.matcher(text).results().parallel().forEach(it -> {
             wordFrequencyMap.compute(it.group().toLowerCase(), (k, v) -> {
                 if (v == null) {
-                    return new WordFrequencyImpl(k, 1);
+                    return new WordFrequencyImpl(k, 1); // first occurrence
                 } else {
-                    return v.setFrequency(v.getFrequency() + 1);
+                    return v.setFrequency(v.getFrequency() + 1); // increment existing
                 }
             });
         });
+
+        // Sort by frequency desc, then word asc; truncate to n results.
         return wordFrequencyMap.values().stream()
                 .sorted((a, b) -> {
                     int freqCompare = Integer.compare(b.getFrequency(), a.getFrequency());
