@@ -1,5 +1,7 @@
 # Anva Document Word Counter
 
+> **Transparency Note:** This document has been edited with the help of a Large Language Model (LLM) for improved readability and structure. Additionally, some parts of the codebase were written using an LLM to boost productivity. However, the overall design, code flow, use cases, algorithmic choices, and the majority of the code are original contributions of the author.
+
 A Spring Boot REST API for analyzing word frequencies in text documents.
 
 ## How to Run the Application
