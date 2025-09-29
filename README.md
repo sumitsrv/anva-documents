@@ -1,149 +1,62 @@
 # Anva Document Word Counter
 
-A Spring Boot REST API application for analyzing word frequencies in text documents.
+A Spring Boot REST API for analyzing word frequencies in text documents.
 
-## Overview
-
-This application provides REST endpoints to analyze text and calculate various word frequency metrics including:
-- Highest frequency of any word in a text
-- Frequency of a specific word in a text  
-- Most frequent N words in a text
-
-## Technologies Used
-
-- **Java 24**
-- **Spring Boot 3.5.3**
-- **Spring Web** (REST API)
-- **Maven** (Build tool)
-
-## Project Structure
-
-```
-src/
-├── main/
-│   ├── java/com/anva/
-│   │   ├── application/
-│   │   │   └── ApplicationBoot.java          # Main Spring Boot application class
-│   │   ├── controllers/
-│   │   │   └── DocumentController.java       # REST controller for document operations
-│   │   ├── models/
-│   │   │   └── WordFrequency.java           # Interface for word frequency model
-│   │   └── services/
-│   │       ├── WordFrequencyAnalyzerImpl.java # Service implementation
-│   │       └── interfaces/
-│   │           └── WordFrequencyAnalyzer.java # Service interface
-│   └── resources/
-│       └── application.properties            # Application configuration
-└── test/
-    ├── java/                                # Test source directory
-    └── resources/                           # Test resources
-```
-
-## Prerequisites
-
-- Java 24 or higher
-- Maven 3.6+ 
-- Your favorite IDE (IntelliJ IDEA, Eclipse, VS Code, etc.)
-
-## Getting Started
-
-### 1. Clone the Repository
-
-```bash
-git clone <repository-url>
-cd AnvaDocumentWordCounter
-```
-
-### 2. Build the Project
-
-```bash
-mvn clean compile
-```
-
-### 3. Run Tests
-
-```bash
-mvn test
-```
-
-### 4. Run the Application
+## How to Run the Application
 
 ```bash
 mvn spring-boot:run
 ```
 
-Alternatively, you can run the main class directly from your IDE.
-
-The application will start on port `8080` by default.
+The application starts on port `8080` by default.
 
 ## API Endpoints
 
-All endpoints are prefixed with `/documents`
+All endpoints are prefixed with `/documents` and accept plain text as request body.
 
 ### 1. Calculate Highest Frequency
-
-Returns the highest frequency of any word in the given text.
-
 **Endpoint:** `POST /documents/highest-frequency`
+- **Input:** Plain text string
+- **Output:** Integer (highest word frequency)
 
-**Request Body:** Plain text string
-
-**Response:** Integer representing the highest word frequency
-
-**Example:**
-```bash
-curl -X POST http://localhost:8080/documents/highest-frequency \
-  -H "Content-Type: text/plain" \
-  -d "The quick brown fox jumps over the lazy dog. The fox is quick."
-```
-
-### 2. Calculate Word Frequency
-
-Returns the frequency of a specific word in the given text.
-
+### 2. Calculate Word Frequency  
 **Endpoint:** `POST /documents/word-frequency?word={word}`
-
-**Request Body:** Plain text string
-
-**Query Parameter:** `word` - The word to count
-
-**Response:** Integer representing the word frequency
-
-**Example:**
-```bash
-curl -X POST "http://localhost:8080/documents/word-frequency?word=the" \
-  -H "Content-Type: text/plain" \
-  -d "The quick brown fox jumps over the lazy dog. The fox is quick."
-```
+- **Input:** Plain text string + query parameter `word`
+- **Output:** Integer (frequency of specified word)
 
 ### 3. Calculate Most Frequent N Words
+**Endpoint:** `POST /documents/most-frequent-words?n={number}`  
+- **Input:** Plain text string + query parameter `n`
+- **Output:** List of WordFrequency objects with word and frequency
 
-Returns the N most frequent words in the given text.
+## System Architecture
 
-**Endpoint:** `POST /documents/most-frequent-words?n={number}`
+The application follows a Model View Controller (MVC) architecture:
 
-**Request Body:** Plain text string
+- **Controller Layer** (`DocumentController`): REST endpoints handling HTTP requests/responses
+- **Service Layer** (`WordFrequencyAnalyzer`): Business logic for word frequency analysis
+- **Model Layer** (`WordFrequency`): Data models representing word-frequency pairs
 
-**Query Parameter:** `n` - Number of top frequent words to return
+## Algorithmic Choices in Word Frequency Processing
 
-**Response:** List of WordFrequency objects
+### Word Tokenization
+- Uses regex pattern `\b[a-zA-Z]+\b` to extract alphabetic words with word boundaries
+- Normalizes words to lowercase for case-insensitive counting
+- Excludes punctuation and non-alphabetic characters
 
-**Example:**
-```bash
-curl -X POST "http://localhost:8080/documents/most-frequent-words?n=3" \
-  -H "Content-Type: text/plain" \
-  -d "The quick brown fox jumps over the lazy dog. The fox is quick."
-```
+### Parallel Processing
+- Employs Java parallel streams for potential performance gains on large text inputs
+- Uses `ConcurrentHashMap` and atomic operations for thread-safe frequency counting
+- Trade-off: Synchronization overhead may outweigh benefits for smaller inputs
 
-## Configuration
+### Data Structures
+- **ConcurrentHashMap**: Thread-safe word-to-frequency mapping
+- **AtomicReference/AtomicInteger**: Thread-safe counters and references
+- **Stream sorting**: For top-N frequency ranking with frequency desc, word asc ordering
 
-The application uses the following default configuration in `application.properties`:
-
-```properties
-server.port=8080
-```
-
-You can override these settings by:
-- Modifying `src/main/resources/application.properties`
-- Using environment variables
-- Passing JVM arguments
+### Performance Considerations
+- Single-pass processing for efficiency, focusing on large incoming texts. 
+- However, the parallel approach may introduce overhead for smaller texts, it is optimized for larger documents.
+- Although, this could be probably improved by adding a conditional processing by first checking the size of the document/text and choose a sequential processing to avoid synchronization and context switching overhead due to parallelism.
+- In-memory frequency counting suitable for moderate text sizes
+- Parallel processing designed for CPU-bound workloads with available cores
